@@ -5,6 +5,8 @@ mobs = {}
 mobs.mod = "redo"
 mobs.version = "20171112"
 
+local Ground1 = "(-140, 31, 30)"
+local Ground2 = "(7, 80, -36)"
 
 -- Intllib
 local MP = minetest.get_modpath(minetest.get_current_modname())
@@ -2809,6 +2811,7 @@ end
 function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 	interval, chance, aoc, min_height, max_height, day_toggle, on_spawn)
 
+	
 	-- chance/spawn number override in minetest.conf for registered mob
 	local numbers = minetest.settings:get(name)
 
@@ -2838,6 +2841,22 @@ function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 
 		action = function(pos, node, active_object_count, active_object_count_wider)
 
+
+			-- Spawn only in this Area ...
+			local pos1 = minetest.string_to_pos(Ground1)
+			local pos2 = minetest.string_to_pos(Ground2)
+		
+			if( not(
+					((pos.x >= pos1.x) and (pos.y >= pos1.y) and (pos.z >= pos1.z)) and
+					((pos.x <= pos2.x) and (pos.y <= pos2.y) and (pos.z <= pos2.z))
+				 ) 
+			) then
+				  
+				  --print("Mobspawn Outside ...")
+				  return
+			end
+			
+				
 			-- is mob actually registered?
 			if not mobs.spawning_mobs[name] then
 --print ("--- mob doesn't exist", name)
