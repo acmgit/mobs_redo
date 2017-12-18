@@ -5,8 +5,13 @@ mobs = {}
 mobs.mod = "redo"
 mobs.version = "20171112"
 
+local area = {}
+
+-- Testarea
 local Ground1 = "(-140, 31, 30)"
 local Ground2 = "(7, 80, -36)"
+area.pos1 = minetest.string_to_pos(Ground1)
+area.pos2 = minetest.string_to_pos(Ground2)
 
 -- Intllib
 local MP = minetest.get_modpath(minetest.get_current_modname())
@@ -31,8 +36,20 @@ function mobs.is_creative(name)
 	return creative_mode_cache or minetest.check_player_privs(name, {creative = true})
 end
 
+function mobs.exists_area()
+	if(area.pos1 == nil or area.pos2 == nil) then 
+		--print("No Areadata ..")
+		return false
+
+	end -- if(area.pos1
+	
+	return true
+
+end -- mobs.exists_area()
+
 -- Sort Positions
 function mobs.sortPos(area)
+		
 	if area.pos1.x > area.pos2.x then
 		area.pos2.x, area.pos1.x = area.pos1.x, area.pos2.x
 		
@@ -55,10 +72,6 @@ end -- mobs.sortPos()
 -- Check Point in Area
 
 function mobs.check_point(area, point)
-
-	-- Sort the Positions
-	area = mobs.sortPos(area)
-	
 	if( (
 		((point.x >= area.pos1.x) and (point.y >= area.pos1.y) and (point.z >= area.pos1.z)) and
 		((point.x <= area.pos2.x) and (point.y <= area.pos2.y) and (point.z <= area.pos2.z))
@@ -72,7 +85,7 @@ function mobs.check_point(area, point)
 	--Point is outside of the Area
 	return false
 
-end -- mobs.check()
+end -- mobs.check_point()
 
 -- localize math functions
 local pi = math.pi
@@ -105,14 +118,41 @@ local remove_far = minetest.settings:get_bool("remove_far_mobs")
 local difficulty = tonumber(minetest.settings:get("mob_difficulty")) or 1.0
 local show_health = minetest.settings:get_bool("mob_show_health") ~= false
 local max_per_block = tonumber(minetest.settings:get("max_objects_per_block") or 99)
+local mobs_spawn_area = minetest.settings:get_bool("mobs_spawn_area")
 
 -- Peaceful mode message so players will know there are no monsters
 if peaceful_only then
 	minetest.register_on_joinplayer(function(player)
+	
 		minetest.chat_send_player(player:get_player_name(),
 			S("** Peaceful Mode Active - No Monsters Will Spawn"))
+			
+		if mobs_spawn_area then
+			minetest.chat_send_player(player:get_player_name(),
+				S("** Mobs spawns only in certain Areas."))
+				
+		else
+			minetest.chat_send_player(player:get_player_name(),
+				S("** Mobs can spawn everywhere."))
+				
+		end
+			
+	end)
+else
+	minetest.register_on_joinplayer(function(player)
+		if mobs_spawn_area then
+			minetest.chat_send_player(player:get_player_name(),
+				S("** Mobs spawns only in certain Areas."))
+				
+		else
+			minetest.chat_send_player(player:get_player_name(),
+				S("** Mobs can spawn everywhere."))
+				
+		end
+			
 	end)
 end
+
 
 -- calculate aoc range for mob count
 local aosrb = tonumber(minetest.settings:get("active_object_send_range_blocks"))
@@ -2885,15 +2925,23 @@ function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 
 
 			-- Spawn only in this Area ...
-			local area = {}
-			area.pos1 = minetest.string_to_pos(Ground1)
-			area.pos2 = minetest.string_to_pos(Ground2)
+			if mobs_spawn_area then
+				if(mobs.exists_area(area)) then -- exists an Area?
+					mobs.sortPos(area)
+					if( not (mobs.check_point(area, pos))) then
+						-- Mob is not in the Area
+						return
 			
-			if( not (mobs.check_point(area, pos))) then
-				return
-
-			end
+					end -- if(mobs_check_point
 			
+				else -- Area don't exist
+				
+					-- do nothing
+					return
+			
+				end -- if(mobs.check_area
+				
+			end -- if(mobs_spawn_area
 				
 			-- is mob actually registered?
 			if not mobs.spawning_mobs[name] then

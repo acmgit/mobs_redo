@@ -13,7 +13,8 @@ The mob api is a function that can be called on by other mods to add new animals
     'mobname' can change specific mob chance rate (0 to disable) and spawn number e.g. mobs_animal:cow = 1000,5
     'mob_difficulty' sets difficulty level (health and hit damage multiplied by this number), defaults to 1.0.
     'mob_show_health' if false then punching mob will not show health status (true by default)
-
+    'mobs_spawn_area'  if true, mobs spawns only in certain Areas.
+    
 mobs:register_mob(name, definition)
 
 This functions registers a new mob as a Minetest entity.
