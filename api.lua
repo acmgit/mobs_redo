@@ -31,6 +31,48 @@ function mobs.is_creative(name)
 	return creative_mode_cache or minetest.check_player_privs(name, {creative = true})
 end
 
+-- Sort Positions
+function mobs.sortPos(area)
+	if area.pos1.x > area.pos2.x then
+		area.pos2.x, area.pos1.x = area.pos1.x, area.pos2.x
+		
+	end
+	
+	if area.pos1.y > area.pos2.y then
+		area.pos2.y, area.pos1.y = area.pos1.y, area.pos2.y
+		
+	end
+	
+	if area.pos1.z > area.pos2.z then
+		area.pos2.z, area.pos1.z = area.pos1.z, area.pos2.z
+		
+	end
+	
+	return area
+	
+end -- mobs.sortPos()
+
+-- Check Point in Area
+
+function mobs.check_point(area, point)
+
+	-- Sort the Positions
+	area = mobs.sortPos(area)
+	
+	if( (
+		((point.x >= area.pos1.x) and (point.y >= area.pos1.y) and (point.z >= area.pos1.z)) and
+		((point.x <= area.pos2.x) and (point.y <= area.pos2.y) and (point.z <= area.pos2.z))
+	    ) 
+	) then
+		-- Point is inside of the Area
+		return true
+
+	end
+
+	--Point is outside of the Area
+	return false
+
+end -- mobs.check()
 
 -- localize math functions
 local pi = math.pi
@@ -2843,17 +2885,13 @@ function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 
 
 			-- Spawn only in this Area ...
-			local pos1 = minetest.string_to_pos(Ground1)
-			local pos2 = minetest.string_to_pos(Ground2)
-		
-			if( not(
-					((pos.x >= pos1.x) and (pos.y >= pos1.y) and (pos.z >= pos1.z)) and
-					((pos.x <= pos2.x) and (pos.y <= pos2.y) and (pos.z <= pos2.z))
-				 ) 
-			) then
-				  
-				  --print("Mobspawn Outside ...")
-				  return
+			local area = {}
+			area.pos1 = minetest.string_to_pos(Ground1)
+			area.pos2 = minetest.string_to_pos(Ground2)
+			
+			if( not (mobs.check_point(area, pos))) then
+				return
+
 			end
 			
 				
