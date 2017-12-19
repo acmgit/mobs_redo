@@ -5,6 +5,7 @@ mobs = {}
 mobs.mod = "redo"
 mobs.version = "20171112"
 
+local spawn_areas = {}
 local area = {}
 
 -- Testarea
@@ -36,8 +37,9 @@ function mobs.is_creative(name)
 	return creative_mode_cache or minetest.check_player_privs(name, {creative = true})
 end
 
-function mobs.exists_area()
-	if(area.pos1 == nil or area.pos2 == nil) then 
+-- Areadata valid?
+function mobs.exists_area(mob_area)
+	if(mob_area.pos1 == nil or mob_area.pos2 == nil) then 
 		--print("No Areadata ..")
 		return false
 
@@ -48,33 +50,43 @@ function mobs.exists_area()
 end -- mobs.exists_area()
 
 -- Sort Positions
-function mobs.sortPos(area)
+function mobs.sortPos(mob_area)
 		
-	if area.pos1.x > area.pos2.x then
-		area.pos2.x, area.pos1.x = area.pos1.x, area.pos2.x
-		
-	end
-	
-	if area.pos1.y > area.pos2.y then
-		area.pos2.y, area.pos1.y = area.pos1.y, area.pos2.y
+	if mob_area.pos1.x > mob_area.pos2.x then
+		mob_area.pos2.x, mob_area.pos1.x = mob_area.pos1.x, mob_area.pos2.x
 		
 	end
 	
-	if area.pos1.z > area.pos2.z then
-		area.pos2.z, area.pos1.z = area.pos1.z, area.pos2.z
+	if mob_area.pos1.y > mob_area.pos2.y then
+		mob_area.pos2.y, mob_area.pos1.y = mob_area.pos1.y, mob_area.pos2.y
 		
 	end
 	
-	return area
+	if mob_area.pos1.z > mob_area.pos2.z then
+		mob_area.pos2.z, mob_area.pos1.z = mob_area.pos1.z, mob_area.pos2.z
+		
+	end
+	
+	return mob_area
 	
 end -- mobs.sortPos()
 
 -- Check Point in Area
 
-function mobs.check_point(area, point)
+function mobs.check_point(mob_area, point)
+
+	-- Check argument
+	if( not(mobs.exists_area(mob_area))) then
+		return false
+	end
+	
+	-- Sort Area
+	mob_area = mobs.sortPos(mob_area)
+	
+	-- Compare it with the Point
 	if( (
-		((point.x >= area.pos1.x) and (point.y >= area.pos1.y) and (point.z >= area.pos1.z)) and
-		((point.x <= area.pos2.x) and (point.y <= area.pos2.y) and (point.z <= area.pos2.z))
+		((point.x >= mob_area.pos1.x) and (point.y >= mob_area.pos1.y) and (point.z >= mob_area.pos1.z)) and
+		((point.x <= mob_area.pos2.x) and (point.y <= mob_area.pos2.y) and (point.z <= mob_area.pos2.z))
 	    ) 
 	) then
 		-- Point is inside of the Area
@@ -2926,21 +2938,12 @@ function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 
 			-- Spawn only in this Area ...
 			if mobs_spawn_area then
-				if(mobs.exists_area(area)) then -- exists an Area?
-					mobs.sortPos(area)
-					if( not (mobs.check_point(area, pos))) then
-						-- Mob is not in the Area
-						return
-			
-					end -- if(mobs_check_point
-			
-				else -- Area don't exist
-				
-					-- do nothing
+				if( not (mobs.check_point(area, pos))) then
+					-- Mob is not in the Area
 					return
 			
-				end -- if(mobs.check_area
-				
+				end -- if(mobs_check_point
+								
 			end -- if(mobs_spawn_area
 				
 			-- is mob actually registered?
