@@ -5,14 +5,26 @@ mobs = {}
 mobs.mod = "redo"
 mobs.version = "20171112"
 
-local spawn_areas = {}
-local area = {}
+local mobs_spawn_area = minetest.settings:get_bool("mobs_spawn_area")
+mobs.spawn_areas = {}
 
--- Testarea
-local Ground1 = "(-140, 31, 30)"
-local Ground2 = "(7, 80, -36)"
-area.pos1 = minetest.string_to_pos(Ground1)
-area.pos2 = minetest.string_to_pos(Ground2)
+local path = minetest.get_modpath("mobs")
+local area = {}
+dofile(path .. "/spawn_areas.lua") -- Get the Areas
+
+if mobs_spawn_area then
+
+	print(" ** List Mob-Areas **")
+
+	for key, value in ipairs(mobs.spawn_areas) do
+		print("Area: " .. key)
+		print("Name: " .. value.name)
+		print("  von: " .. value.pos1)
+		print("  bis: " .. value.pos2)
+
+	end
+
+end
 
 -- Intllib
 local MP = minetest.get_modpath(minetest.get_current_modname())
@@ -37,9 +49,11 @@ function mobs.is_creative(name)
 	return creative_mode_cache or minetest.check_player_privs(name, {creative = true})
 end
 
+
 -- Areadata valid?
 function mobs.exists_area(mob_area)
-	if(mob_area.pos1 == nil or mob_area.pos2 == nil) then 
+	if( (mob_area.pos1 == nil) or (mob_area.pos2 == nil) ) then
+	
 		--print("No Areadata ..")
 		return false
 
@@ -2938,12 +2952,26 @@ function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 
 			-- Spawn only in this Area ...
 			if mobs_spawn_area then
-				if( not (mobs.check_point(area, pos))) then
+				
+				local spawnflag = false
+				
+				for key, value in ipairs(mobs.spawn_areas) do
+					-- Get an Area from the List
+					area.pos1 = minetest.string_to_pos(value.pos1)
+					area.pos2 = minetest.string_to_pos(value.pos2)
+					
+					if( mobs.check_point(area, pos)) then
+						-- Mob is in Area
+						spawnflag = true
+					end
+				end
+				
+				if( not(spawnflag)) then
 					-- Mob is not in the Area
 					return
-			
-				end -- if(mobs_check_point
-								
+				end
+				
+				-- Mob is in the Area
 			end -- if(mobs_spawn_area
 				
 			-- is mob actually registered?
