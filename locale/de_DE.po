@@ -70,6 +70,10 @@ msgstr "Zeige alle Flächen wo Mobs erscheinen können:"
 msgid "Areaname:"
 msgstr "Flächenname:"
 
+#: api.lua
+msgid "Shows a List of all Areas where Mobs can spawn."
+msgstr "Zeigt eine Liste aller Flächen, wo Mobs erscheinen können."
+
 #: crafts.lua
 msgid "Name Tag"
 msgstr "Namensschild"

@@ -108,10 +108,10 @@ if mobs_spawn_area then
 		minetest.chat_send_player(player,
 			"--------------------------------------------------------------\n")
 		
+		minetest.chat_send_player(player,
+			S("Areaname:"))
 
 		for key, value in ipairs(mobs.spawn_areas) do
-			minetest.chat_send_player(player,
-				S("Areaname:"))
 				minetest.chat_send_player(player,
 				value.name .. "\n")
 				minetest.chat_send_player(player,
@@ -3735,7 +3735,7 @@ if mobs_spawn_area then
 
 	minetest.register_chatcommand("list_mobs_areas", {
 		params = "",
-		description = "Shows a List of all Areas where Mobs can spawn.",
+		description = S("Shows a List of all Areas where Mobs can spawn."),
 		--privs = {interact = true},
 		func = function(name)
 
