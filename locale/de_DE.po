@@ -62,6 +62,14 @@ msgstr "Namen eingeben:"
 msgid "Rename"
 msgstr "Umbenennen"
 
+#: api.lua
+msgid "Show all Areas where Mobs can spawn:"
+msgstr "Zeige alle Flächen wo Mobs erscheinen können:"
+
+#: api.lua
+msgid "Areaname:"
+msgstr "Flächenname:"
+
 #: crafts.lua
 msgid "Name Tag"
 msgstr "Namensschild"

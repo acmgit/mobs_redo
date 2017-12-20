@@ -12,20 +12,6 @@ local path = minetest.get_modpath("mobs")
 local area = {}
 dofile(path .. "/spawn_areas.lua") -- Get the Areas
 
-if mobs_spawn_area then
-
-	print(" ** List Mob-Areas **")
-
-	for key, value in ipairs(mobs.spawn_areas) do
-		print("Area: " .. key)
-		print("Name: " .. value.name)
-		print("  von: " .. value.pos1)
-		print("  bis: " .. value.pos2)
-
-	end
-
-end
-
 -- Intllib
 local MP = minetest.get_modpath(minetest.get_current_modname())
 local S, NS = dofile(MP .. "/intllib.lua")
@@ -112,6 +98,31 @@ function mobs.check_point(mob_area, point)
 	return false
 
 end -- mobs.check_point()
+
+if mobs_spawn_area then
+
+	function mobs.list_mobs_areas(player)
+		
+		minetest.chat_send_player(player,
+			S("Show all Areas where Mobs can spawn:"))
+		minetest.chat_send_player(player,
+			"--------------------------------------------------------------\n")
+		
+
+		for key, value in ipairs(mobs.spawn_areas) do
+			minetest.chat_send_player(player,
+				S("Areaname:"))
+				minetest.chat_send_player(player,
+				value.name .. "\n")
+				minetest.chat_send_player(player,
+				value.pos1 .. "\n")
+				minetest.chat_send_player(player,
+				value.pos2 .. "\n")
+		end
+	
+	end
+
+end
 
 -- localize math functions
 local pi = math.pi
@@ -3718,4 +3729,19 @@ function mobs:alias_mob(old_name, new_name)
 			self.object:remove()
 		end
 	})
+end
+
+if mobs_spawn_area then
+
+	minetest.register_chatcommand("list_mobs_areas", {
+		params = "",
+		description = "Shows a List of all Areas where Mobs can spawn.",
+		--privs = {interact = true},
+		func = function(name)
+
+			mobs.list_mobs_areas(name)
+
+		end,
+	})
+
 end
