@@ -3,7 +3,7 @@
 
 mobs = {}
 mobs.mod = "redo"
-mobs.version = "20171112"
+mobs.version = "20171222"
 
 local mobs_spawn_area = minetest.settings:get_bool("mobs_spawn_area")
 mobs.spawn_areas = {}
@@ -547,7 +547,8 @@ local check_for_death = function(self, cause, cmi_cause)
 			self.nametag2 = self.nametag or ""
 		end
 
-		if show_health then
+		if show_health
+		and (cmi_cause and cmi_cause.type == "punch") then
 
 			self.htimer = 2
 			self.nametag = "♥ " .. self.health .. " / " .. self.hp_max
