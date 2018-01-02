@@ -3,7 +3,7 @@
 
 mobs = {}
 mobs.mod = "redo"
-mobs.version = "20171222"
+mobs.version = "20171230"
 
 local mobs_spawn_area = minetest.settings:get_bool("mobs_spawn_area")
 mobs.spawn_areas = {}
@@ -156,6 +156,7 @@ local difficulty = tonumber(minetest.settings:get("mob_difficulty")) or 1.0
 local show_health = minetest.settings:get_bool("mob_show_health") ~= false
 local max_per_block = tonumber(minetest.settings:get("max_objects_per_block") or 99)
 local mobs_spawn_area = minetest.settings:get_bool("mobs_spawn_area")
+local mob_chance_multiplier = tonumber(minetest.settings:get("mob_chance_multiplier") or 1)
 
 -- Peaceful mode message so players will know there are no monsters
 if peaceful_only then
@@ -2956,7 +2957,7 @@ function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 		nodenames = nodes,
 		neighbors = neighbors,
 		interval = interval,
-		chance = chance,
+		chance = max(1, (chance * mob_chance_multiplier)),
 		catch_up = false,
 
 		action = function(pos, node, active_object_count, active_object_count_wider)
