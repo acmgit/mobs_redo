@@ -6,16 +6,12 @@ mobs.mod = "redo"
 mobs.version = "20171230"
 
 local mobs_spawn_area = minetest.settings:get_bool("mobs_spawn_area")
-mobs.spawn_areas = {
-					name = {},
-					pos1 = {},
-					pos2 = {}
-				}
+mobs.spawn_areas = {}
 
 local mod_storage = minetest.get_mod_storage()  -- initalize storage file of this mod. This can only happen here and should be always local
 
 local path = minetest.get_modpath("mobs")
-dofile(path .. "/spawn_areas.lua") -- Get the Areas
+-- dofile(path .. "/spawn_areas.lua") -- Get the Areas
 
 -- Intllib
 local MP = minetest.get_modpath(minetest.get_current_modname())
@@ -105,10 +101,19 @@ function mobs.check_point(mob_area, point)
 end -- mobs.c
 
 function mobs.save_spawn_areas()
-	mod_storage:from_table({fields = mobs.spawn_areas})
+	mod_storage:set_string(areas, minetest.serialize({mobs.spawn_areas}) )
 
 end
 
+function mobs.load_spawn_areas()
+	
+	mobs.spawn_areas = minetest.deserialize(mod_storage:get_string("areas"))
+	print(mod_storage:get_string("areas"))
+	
+
+end
+
+	
 if mobs_spawn_area then
 
 	function mobs.list_mobs_areas(player)
@@ -116,7 +121,7 @@ if mobs_spawn_area then
 		minetest.chat_send_player(player,
 			S("Show all Areas where Mobs can spawn:"))
 
-		for key, value in ipairs(mobs.spawn_areas) do
+		for key, value in pairs(mobs.spawn_areas) do
 			minetest.chat_send_player(player,
 				"--------------------------------------------------------------\n")
 		
@@ -124,11 +129,11 @@ if mobs_spawn_area then
 				S("Areaname:"))
 
 				minetest.chat_send_player(player,
-				value.name .. "\n")
+				(value.name or "") .. "\n")
 				minetest.chat_send_player(player,
-				value.pos1 .. "\n")
+				(value.pos1 or "") .. "\n")
 				minetest.chat_send_player(player,
-				value.pos2 .. "\n")
+				(value.pos2 or "") .. "\n")
 		end
 	
 	end
@@ -3759,5 +3764,5 @@ if mobs_spawn_area then
 	})
 	
 	--mobs.save_spawn_areas()
-
+	mobs.load_spawn_areas()
 end
