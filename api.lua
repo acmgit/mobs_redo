@@ -6,10 +6,15 @@ mobs.mod = "redo"
 mobs.version = "20171230"
 
 local mobs_spawn_area = minetest.settings:get_bool("mobs_spawn_area")
-mobs.spawn_areas = {}
+mobs.spawn_areas = {
+					name = {},
+					pos1 = {},
+					pos2 = {}
+				}
+
+local mod_storage = minetest.get_mod_storage()  -- initalize storage file of this mod. This can only happen here and should be always local
 
 local path = minetest.get_modpath("mobs")
-local area = {}
 dofile(path .. "/spawn_areas.lua") -- Get the Areas
 
 -- Intllib
@@ -97,7 +102,12 @@ function mobs.check_point(mob_area, point)
 	--Point is outside of the Area
 	return false
 
-end -- mobs.check_point()
+end -- mobs.c
+
+function mobs.save_spawn_areas()
+	mod_storage:from_table({fields = mobs.spawn_areas})
+
+end
 
 if mobs_spawn_area then
 
@@ -105,13 +115,14 @@ if mobs_spawn_area then
 		
 		minetest.chat_send_player(player,
 			S("Show all Areas where Mobs can spawn:"))
-		minetest.chat_send_player(player,
-			"--------------------------------------------------------------\n")
-		
-		minetest.chat_send_player(player,
-			S("Areaname:"))
 
 		for key, value in ipairs(mobs.spawn_areas) do
+			minetest.chat_send_player(player,
+				"--------------------------------------------------------------\n")
+		
+			minetest.chat_send_player(player,
+				S("Areaname:"))
+
 				minetest.chat_send_player(player,
 				value.name .. "\n")
 				minetest.chat_send_player(player,
@@ -2967,6 +2978,7 @@ function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 			if mobs_spawn_area then
 				
 				local spawnflag = false
+				local area = {}
 				
 				for key, value in ipairs(mobs.spawn_areas) do
 					-- Get an Area from the List
@@ -3745,5 +3757,7 @@ if mobs_spawn_area then
 
 		end,
 	})
+	
+	--mobs.save_spawn_areas()
 
 end
