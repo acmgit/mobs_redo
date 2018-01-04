@@ -3,7 +3,7 @@
 
 mobs = {}
 mobs.mod = "redo"
-mobs.version = "20171230"
+mobs.version = "20180104"
 
 local mobs_spawn_area = minetest.settings:get_bool("mobs_spawn_area")
 mobs.spawn_areas = {}
@@ -952,6 +952,7 @@ local breed = function(self)
 				mesh = self.base_mesh,
 				visual_size = self.base_size,
 				collisionbox = self.base_colbox,
+				selectionbox = self.base_selbox,
 			})
 
 			-- custom function when child grows up
@@ -1071,6 +1072,14 @@ local breed = function(self)
 							self.base_colbox[4] * .5,
 							self.base_colbox[5] * .5,
 							self.base_colbox[6] * .5,
+						},
+						selectionbox = {
+							self.base_selbox[1] * .5,
+							self.base_selbox[2] * .5,
+							self.base_selbox[3] * .5,
+							self.base_selbox[4] * .5,
+							self.base_selbox[5] * .5,
+							self.base_selbox[6] * .5,
 						},
 					})
 					-- tamed and owned by parents' owner
@@ -2547,6 +2556,7 @@ local mob_activate = function(self, staticdata, def, dtime)
 		self.base_mesh = def.mesh
 		self.base_size = self.visual_size
 		self.base_colbox = self.collisionbox
+		self.base_selbox = self.selectionbox
 	end
 
 	-- set texture, model and size
@@ -2554,6 +2564,7 @@ local mob_activate = function(self, staticdata, def, dtime)
 	local mesh = self.base_mesh
 	local vis_size = self.base_size
 	local colbox = self.base_colbox
+	local selbox = self.base_selbox
 
 	-- specific texture if gotten
 	if self.gotten == true
@@ -2587,6 +2598,14 @@ local mob_activate = function(self, staticdata, def, dtime)
 			self.base_colbox[5] * .5,
 			self.base_colbox[6] * .5
 		}
+		selbox = {
+			self.base_selbox[1] * .5,
+			self.base_selbox[2] * .5,
+			self.base_selbox[3] * .5,
+			self.base_selbox[4] * .5,
+			self.base_selbox[5] * .5,
+			self.base_selbox[6] * .5
+		}
 	end
 
 	if self.health == 0 then
@@ -2609,6 +2628,7 @@ local mob_activate = function(self, staticdata, def, dtime)
 	self.textures = textures
 	self.mesh = mesh
 	self.collisionbox = colbox
+	self.selectionbox = selbox
 	self.visual_size = vis_size
 	self.standing_in = ""
 
@@ -2798,6 +2818,7 @@ minetest.register_entity(name, {
 	hp_max = max(1, (def.hp_max or 10) * difficulty),
 	physical = true,
 	collisionbox = def.collisionbox,
+	selectionbox = def.selectionbox or def.collisionbox,
 	visual = def.visual,
 	visual_size = def.visual_size or {x = 1, y = 1},
 	mesh = def.mesh,
@@ -2988,7 +3009,8 @@ function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 			end -- if(mobs_spawn_area
 				
 			-- is mob actually registered?
-			if not mobs.spawning_mobs[name] then
+			if not mobs.spawning_mobs[name]
+			or not minetest.registered_entities[name] then
 --print ("--- mob doesn't exist", name)
 				return
 			end
@@ -3057,39 +3079,34 @@ function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 				return
 			end
 
-			-- are we spawning inside solid nodes?
-			if minetest.registered_nodes[node_ok(pos).name].walkable == true then
---print ("--- feet in block", name, node_ok(pos).name)
-				return
-			end
+			-- do we have enough height clearance to spawn mob?
+			local ent = minetest.registered_entities[name]
+			local height = max(0, math.ceil(ent.collisionbox[5] - ent.collisionbox[2]) - 1)
 
-			pos.y = pos.y + 1
+			for n = 0, height do
 
-			if minetest.registered_nodes[node_ok(pos).name].walkable == true then
---print ("--- head in block", name, node_ok(pos).name)
-				return
+				local pos2 = {x = pos.x, y = pos.y + n, z = pos.z}
+
+				if minetest.registered_nodes[node_ok(pos2).name].walkable == true then
+--print ("--- inside block", name, node_ok(pos2).name)
+					return
+				end
 			end
 
 			-- spawn mob half block higher than ground
-			pos.y = pos.y - 0.5
+			pos.y = pos.y + 0.5
 
-			if minetest.registered_entities[name] then
-
-				local mob = minetest.add_entity(pos, name)
+			local mob = minetest.add_entity(pos, name)
 --[[
-				print ("[mobs] Spawned " .. name .. " at "
-				.. minetest.pos_to_string(pos) .. " on "
-				.. node.name .. " near " .. neighbors[1])
+			print ("[mobs] Spawned " .. name .. " at "
+			.. minetest.pos_to_string(pos) .. " on "
+			.. node.name .. " near " .. neighbors[1])
 ]]
-				if on_spawn then
+			if on_spawn then
 
-					local ent = mob:get_luaentity()
+				local ent = mob:get_luaentity()
 
-					on_spawn(ent, pos)
-				end
-			else
-				minetest.log("warning", string.format("[mobs] %s failed to spawn at %s",
-					name, minetest.pos_to_string(pos)))
+				on_spawn(ent, pos)
 			end
 		end
 	})
