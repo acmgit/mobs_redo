@@ -3,7 +3,7 @@
 
 mobs = {}
 mobs.mod = "redo"
-mobs.version = "20180313"
+mobs.version = "20180328"
 
 local mobs_spawn_area = minetest.settings:get_bool("mobs_spawn_area")
 mobs.spawn_areas = {}
@@ -1517,7 +1517,8 @@ local runaway_from = function(self)
 
 		if objs[n]:is_player() then
 
-			if mobs.invis[ objs[n]:get_player_name() ] then
+			if mobs.invis[ objs[n]:get_player_name() ]
+			or self.owner == objs[n]:get_player_name() then
 
 				type = ""
 			else
@@ -1562,7 +1563,6 @@ local runaway_from = function(self)
 		end
 	end
 
-	-- attack player
 	if min_player then
 
 		local lp = player:get_pos()
@@ -3104,6 +3104,12 @@ end
 
 -- global functions
 
+function mobs:spawn_abm_check(pos, node, name)
+	-- global function to add additional spawn checks
+	-- return true to stop spawning mob
+end
+
+
 function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 	interval, chance, aoc, min_height, max_height, day_toggle, on_spawn)
 
@@ -3170,6 +3176,11 @@ function mobs:spawn_specific(name, nodes, neighbors, min_light, max_light,
 			if not mobs.spawning_mobs[name]
 			or not minetest.registered_entities[name] then
 --print ("--- mob doesn't exist", name)
+				return
+			end
+
+			-- additional custom checks for spawning mob
+			if mobs:spawn_abm_check(pos, node, name) == true then
 				return
 			end
 
@@ -3863,6 +3874,13 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 
 		if not mob_obj[name]
 		or not mob_obj[name].object then
+			return
+		end
+
+		-- make sure nametag is being used to name mob
+		local item = player:get_wielded_item()
+
+		if item:get_name() ~= "mobs:nametag" then
 			return
 		end
 
